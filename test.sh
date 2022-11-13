@@ -1,0 +1,1 @@
+docker run --rm --env-file test.env -e DEBUG=true avojak/pihole-influxdb
