@@ -3,6 +3,11 @@ COPY requirements.txt /
 RUN python3 -m pip install --user -r requirements.txt
 
 FROM python:3-alpine
+LABEL org.opencontainers.image.authors "Andrew Vojak"
+LABEL org.opencontainers.image.licenses "MIT"
+LABEL org.opencontainers.image.source "https://github.com/avojak/pihole-influxdb"
+LABEL org.opencontainers.image.title "pihole-influxdb"
+LABEL org.opencontainers.image.description "Export Pi-hole statistics to InfluxDB 2.x"
 COPY --from=builder /root/.local /root/.local
 COPY pihole-influxdb.py /
 ENTRYPOINT [ "python", "/pihole-influxdb.py" ]
