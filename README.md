@@ -1,6 +1,6 @@
 ![CI](https://github.com/avojak/pihole-influxdb/workflows/CI/badge.svg)
-![GitHub](https://img.shields.io/github/license/avojak/oise)
-![Docker Pulls](https://img.shields.io/docker/pulls/avojak/oise)
+![GitHub](https://img.shields.io/github/license/avojak/pihole-influxdb)
+![Docker Pulls](https://img.shields.io/docker/pulls/avojak/pihole-influxdb)
 
 # Pi-hole InfluxDB
 
