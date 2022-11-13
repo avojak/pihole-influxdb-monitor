@@ -296,7 +296,7 @@ def main():
         help=f'InfluxDB auth token (Default: {DEFAULT_INFLUXDB_TOKEN})')
     parser.add_argument('--influxdb-skip-verify-ssl',
         action='store_false',
-        help=f'whether or not to verify the SSL certificate for InfluxDB (Default: {DEFAULT_INFLUXDB_VERIFY_SSL})')
+        help=f'Skip verification of the SSL certificate for InfluxDB')
     parser.add_argument('-d', '--debug',
         action='store_true',
         help=f'Enable debug logging (Default: {DEBUG})')
