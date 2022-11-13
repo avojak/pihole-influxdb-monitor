@@ -34,7 +34,7 @@ docker run -d \
 
 ## Docker Compose
 
-```
+```yaml
 version: "3.9"
 services:
   pihole-influxdb:
@@ -48,6 +48,18 @@ services:
       - "INFLUXDB_ORG=my-org"
       - "INFLUXDB_TOKEN=super_secret_token"
       - "INFLUXDB_BUCKET=pihole"
+```
+
+## Command Line
+
+```bash
+python3 pihole-influxdb.py \
+    --pihole-aliases "pihole" \
+    --pihole-addresses "http://pi.hole" \
+    --influxdb-address "http://influxdb:8096" \
+    --influxdb-org "my-org" \
+    --influxdb-token "super_secret_token" \
+    --influxdb-bucket "pihole"
 ```
 
 ## Screenshots
