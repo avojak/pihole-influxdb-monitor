@@ -1,3 +1,7 @@
+![CI](https://github.com/avojak/pihole-influxdb/workflows/CI/badge.svg)
+![GitHub](https://img.shields.io/github/license/avojak/oise)
+![Docker Pulls](https://img.shields.io/docker/pulls/avojak/oise)
+
 # Pi-hole InfluxDB
 
 Export Pi-hole statistics to InfluxDB 2.x.
