@@ -64,6 +64,6 @@ python3 pihole-influxdb.py \
 
 ## Screenshots
 
-Plotting queries over time in Grafana:
+Simple dashboard in Grafana:
 
-![Queries Over Time](screenshots/queries_over_time.png)
+![Dashboard](screenshots/dashboard.png)

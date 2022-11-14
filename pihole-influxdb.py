@@ -182,6 +182,7 @@ class PiholeInfluxDB():
 
         # Stats
         stats['ads_percentage_today'] = float(stats['ads_percentage_today']) # Ensure this is always a float, even when 0
+        stats['status'] = 1 if stats['status'] == "enabled" else 0
         points.append(Point.from_dict(
             {
                 "measurement": "stats",
