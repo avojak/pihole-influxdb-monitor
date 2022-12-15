@@ -70,6 +70,6 @@ python3 pihole-influxdb.py \
 
 ## Screenshots
 
-Simple dashboard in Grafana:
+Simple dashboard in Grafana (See: [grafana/Pi-hole.json](grafana/Pi-hole.json)):
 
 ![Dashboard](screenshots/dashboard.png)
