@@ -11,12 +11,15 @@ from datetime import datetime
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.domain.write_precision import WritePrecision
-from urllib.parse import urlparse
+from itertools import zip_longest
+from urllib.parse import urljoin, urlencode, urlparse, urlunparse
+
 
 DEFAULT_INTERVAL_SECONDS = 60
 
 DEFAULT_PIHOLE_ALIAS = 'pihole'
 DEFAULT_PIHOLE_ADDRESS = 'http://pi.hole:80'
+DEFAULT_PIHOLE_TOKEN = None
 
 DEFAULT_INFLUXDB_ADDRESS = 'http://influxdb:8086'
 DEFAULT_INFLUXDB_ORG = 'my-org'
@@ -27,6 +30,16 @@ DEFAULT_INFLUXDB_VERIFY_SSL = True
 DEBUG = False
 
 '''
+Class to contain a Pi-hole configuration.
+'''
+class Pihole():
+
+    def __init__(self, alias, address, token=None):
+        self.alias = alias
+        self.address = address
+        self.token = token
+
+'''
 Class to contain the application configuration.
 '''
 class Config():
@@ -35,15 +48,24 @@ class Config():
         # Set configuration by first checking for command-line arguments. If not present, check for the corresponding
         # environment variable. If not present, use the default.
         self.interval_seconds = int(args.interval or os.getenv("INTERVAL_SECONDS", DEFAULT_INTERVAL_SECONDS))
-        pihole_aliases = (args.pihole_aliases or os.getenv("PIHOLE_ALIAS", DEFAULT_PIHOLE_ALIAS)).split(',')
-        pihole_addresses = (args.pihole_addresses or os.getenv("PIHOLE_ADDRESS", DEFAULT_PIHOLE_ADDRESS)).split(',')
-        if len(pihole_aliases) != len(pihole_addresses):
-            logging.error('The number of Pi-hole aliases provided does not match the number of Pi-hole addresses')
-            exit(1)
+        pihole_aliases = (args.pihole_alias or os.getenv("PIHOLE_ALIAS", DEFAULT_PIHOLE_ALIAS)).split(',')
+        pihole_addresses = (args.pihole_address or os.getenv("PIHOLE_ADDRESS", DEFAULT_PIHOLE_ADDRESS)).split(',')
         if len(pihole_addresses) == 0:
             logging.error("No Pi-hole instances provided")
             exit(1)
-        self.piholes = dict(zip(pihole_aliases, pihole_addresses))
+        if len(pihole_aliases) != len(pihole_addresses):
+            logging.error('The number of Pi-hole aliases provided does not match the number of Pi-hole addresses')
+            exit(1)
+        pihole_tokens = (args.pihole_token or os.getenv("PIHOLE_TOKEN", DEFAULT_PIHOLE_TOKEN))
+        pihole_tokens = pihole_tokens.split(',') if pihole_tokens else list()
+        self.piholes = dict()
+        for alias,address,token in zip_longest(pihole_aliases, pihole_addresses, pihole_tokens):
+            if address in self.piholes:
+                logging.warning(f'Duplicate Pi-hole address provided ({address}), skipping...')
+                continue
+            if not token:
+                logging.warning(f'No auth token provided for {alias}, some data will not be available')
+            self.piholes[address] = Pihole(alias, address, token)
         self.influxdb_address = args.influxdb_address or os.getenv("INFLUXDB_ADDRESS", DEFAULT_INFLUXDB_ADDRESS)
         self.influxdb_org = args.influxdb_org or os.getenv("INFLUXDB_ORG", DEFAULT_INFLUXDB_ORG)
         self.influxdb_token = args.influxdb_token or os.getenv("INFLUXDB_TOKEN", DEFAULT_INFLUXDB_TOKEN)
@@ -58,9 +80,9 @@ class Config():
     '''
     def dump(self):
         logging.info('================== Configuration ==================')
-        logging.info(f'Pi-holes:            {list(self.piholes.items())[0][0]} {list(self.piholes.items())[0][1]}')
-        for alias,address in list(self.piholes.items())[1:]:
-            logging.info(f'                     {alias} {address}')
+        logging.info(f'Pi-holes:            {list(self.piholes.values())[0].alias} {list(self.piholes.values())[0].address} ' + ('(Auth token provided)' if list(self.piholes.values())[0].token else '(No auth token)'))
+        for pihole in list(self.piholes.values())[1:]:
+            logging.info(f'                     {pihole.alias} {pihole.address} ' + ('(Auth token provided)' if pihole.token else '(No auth token)'))
         logging.info(f'Poll interval:       {self.interval_seconds} seconds')
         logging.info(f'InfluxDB address:    {self.influxdb_address}')
         logging.info(f'InfluxDB org:        {self.influxdb_org}')
@@ -78,47 +100,60 @@ class PiholeInfluxDB():
     '''
     Execute a GET request against the Pi-hole API.
     '''
-    def _pihole_api_get(self, alias, query=None):
-        url = self._get_pihole_api_url(alias, query)
+    def _pihole_api_get(self, pihole, query=None, auth_token=None):
+        url = self._get_pihole_api_url(pihole, query, auth_token)
         try:
             # Set the request timeout to be either 50% of the polling interval, or 30 seconds, whichever is smaller.
             response = requests.get(url, timeout=min(0.5 * self.config.interval_seconds, 30))
             response.raise_for_status()
             return response
         except requests.exceptions.HTTPError as e:
-            logging.error(f'[{alias}] [HTTP {response.status_code}] Error executing request to {url}: {e}')
+            logging.error(f'[{pihole.alias}] [HTTP {response.status_code}] Error executing request to {url}: {e}')
         except requests.exceptions.ConnectionError as e:
-            logging.error(f'[{alias}] Error connecting to {self.config.piholes[alias]}: {e}')
+            logging.error(f'[{pihole.alias}] Error connecting to {pihole.address}: {e}')
         except requests.exceptions.Timeout as e:
-            logging.error(f'[{alias}] Timeout connecting to {self.config.piholes[alias]}: {e}')
+            logging.error(f'[{pihole.alias}] Timeout connecting to {pihole.address}: {e}')
         except requests.exceptions.RequestException as e:
-            logging.error(f'[{alias}] Unexpected error while sending request to {url}: {e}')
+            logging.error(f'[{pihole.alias}] Unexpected error while sending request to {url}: {e}')
         return None
 
     '''
     Get the URL for the Pi-hole API with an optional query element.
     '''
-    def _get_pihole_api_url(self, alias, query=None):
-        url = f'{self.config.piholes[alias]}/admin/api.php'
+    def _get_pihole_api_url(self, pihole, query=None, auth_token=None):
+        url = f'{pihole.address}/admin/api.php'
+        query_data = list()
         if query:
-            url = f'{url}?{query}'
+            query_data.append(query)
+        if auth_token:
+            query_data.append(f'auth={auth_token}')
+        if len(query_data) > 0:
+            url = f'{url}?{"&".join(query_data)}'
         return url
 
     '''
     Gets general Pi-hole statistics for the instance.
     '''
-    def _get_stats(self, alias):
-        response = self._pihole_api_get(alias)
+    def _get_stats(self, pihole):
+        queries = ["summaryRaw", "topItems", "topClients", "getForwardDestinations", "getQueryTypes"]
+        response = self._pihole_api_get(pihole, "&".join(queries), pihole.token)
         if response:
             logging.debug(response.json())
             return response.json()
         return None
 
+    # def _get_authorized_stats(self, pihole):
+    #     response = self._pihole_api_get(pihole, "topItems", pihole.token)
+    #     if response:
+    #         logging.debug(response.json())
+    #         return response.json()
+    #     return None
+
     '''
     Gets the number of blocked and total domains in 10 minute intervals over the past 24 hours for the instance.
     '''
-    def _get_10min_data(self, alias):
-        response = self._pihole_api_get(alias, "overTimeData10mins")
+    def _get_10min_data(self, pihole):
+        response = self._pihole_api_get(pihole, "overTimeData10mins")
         if response:
             logging.debug(response.json())
             data = response.json()
@@ -128,11 +163,11 @@ class PiholeInfluxDB():
     '''
     Write all data gathered to InfluxDB.
     '''
-    def _write_to_influxdb(self, alias, stats, domains_over_time, ads_over_time):
-        now = int(time.time())
-        hostname = urlparse(self.config.piholes[alias]).hostname
+    def _write_to_influxdb(self, pihole, stats, domains_over_time, ads_over_time):
+        now_seconds = int(time.time())
+        hostname = urlparse(pihole.address).hostname
         tags = {
-            "alias": alias,
+            "alias": pihole.alias,
             "hostname": hostname
         }
         points=[]
@@ -148,7 +183,7 @@ class PiholeInfluxDB():
                     "last_updated": gravity['absolute'],
                     "seconds_since_update": (gravity['relative']['days'] * 86400) + (gravity['relative']['hours'] * 3600) + (gravity['relative']['minutes'] * 60)
                 },
-                "time": now
+                "time": now_seconds
             },
             WritePrecision.S
         ))
@@ -175,12 +210,70 @@ class PiholeInfluxDB():
                 "measurement": "replies",
                 "tags": tags,
                 "fields": replies,
-                "time": now
+                "time": now_seconds
             },
             WritePrecision.S
         ))
 
-        # Stats
+        # Check for stats that required authentication
+        if 'top_queries' in stats:
+            points.append(Point.from_dict(
+                {
+                    "measurement": "top_queries",
+                    "tags": tags,
+                    "fields": {
+                        "top_10": self._json_to_csv(stats.pop('top_queries'))
+                    },
+                    "time": now_seconds
+                },
+                WritePrecision.S
+            ))
+        if 'top_ads' in stats:
+            points.append(Point.from_dict(
+                {
+                    "measurement": "top_ads",
+                    "tags": tags,
+                    "fields": {
+                        "top_10": self._json_to_csv(stats.pop('top_ads'))   
+                    },
+                    "time": now_seconds
+                },
+                WritePrecision.S
+            ))
+        if 'top_sources' in stats:
+            points.append(Point.from_dict(
+                {
+                    "measurement": "top_sources",
+                    "tags": tags,
+                    "fields": {
+                        "top_10": self._json_to_csv(stats.pop('top_sources'))   
+                    },
+                    "time": now_seconds
+                },
+                WritePrecision.S
+            ))
+        if 'forward_destinations' in stats:
+            points.append(Point.from_dict(
+                {
+                    "measurement": "forward_destinations",
+                    "tags": tags,
+                    "fields": stats.pop('forward_destinations'),
+                    "time": now_seconds
+                },
+                WritePrecision.S
+            ))
+        if 'querytypes' in stats:
+            points.append(Point.from_dict(
+                {
+                    "measurement": "query_types",
+                    "tags": tags,
+                    "fields": stats.pop('querytypes'),
+                    "time": now_seconds
+                },
+                WritePrecision.S
+            ))
+
+        # Remaining stats
         stats['ads_percentage_today'] = float(stats['ads_percentage_today']) # Ensure this is always a float, even when 0
         stats['status'] = 1 if stats['status'] == "enabled" else 0
         points.append(Point.from_dict(
@@ -188,7 +281,7 @@ class PiholeInfluxDB():
                 "measurement": "stats",
                 "tags": tags,
                 "fields": stats,
-                "time": now
+                "time": now_seconds
             },
             WritePrecision.S
         ))
@@ -233,19 +326,31 @@ class PiholeInfluxDB():
             write_api.close()
 
     '''
+    Utility function to take a JSON object and convert the fields to a comma-separated list of key-value pairs.
+    For example: {'example.com': 123, 'google.com': 456}
+    Would become: "example.com:123,google.com:456"
+
+    Table data (such as Top Queries, Top Ads, etc.) are stored this way to facilitate grouping and querying only the latest set of domains, ads, etc.
+    It's simpler to store the data as CSV, then apply transformations in a tool such as Grafana for display purposes.
+    '''
+    def _json_to_csv(self, data):
+        return ','.join([f'{key}:{value}' for key, value in dict(data).items()])
+
+    '''
     Runs the scheduled polling job for a single Pi-hole.
     '''
-    def _run_job(self, alias):
+    def _run_job(self, pihole):
         query_start = datetime.now()
-        stats = self._get_stats(alias)
-        domains_over_time, ads_over_time = self._get_10min_data(alias)
+        stats = self._get_stats(pihole)
+        domains_over_time, ads_over_time = self._get_10min_data(pihole)
+        # authorized_stats = self._get_authorized_stats(pihole) if pihole.token else None
         query_end = datetime.now()
         if stats and domains_over_time and ads_over_time:
-            logging.info(f'[{alias}] Queried successfully in {int((query_end - query_start).total_seconds() * 1000)}ms')
+            logging.info(f'[{pihole.alias}] Queried successfully in {int((query_end - query_start).total_seconds() * 1000)}ms')
             write_start = datetime.now()
-            if self._write_to_influxdb(alias, stats, domains_over_time, ads_over_time):
+            if self._write_to_influxdb(pihole, stats, domains_over_time, ads_over_time):
                 write_end = datetime.now()
-                logging.info(f'[{alias}] Wrote to InfluxDB successfully in {int((write_end - write_start).total_seconds() * 1000)}ms')
+                logging.info(f'[{pihole.alias}] Wrote to InfluxDB successfully in {int((write_end - write_start).total_seconds() * 1000)}ms')
         return
 
     '''
@@ -254,8 +359,8 @@ class PiholeInfluxDB():
     def start(self):
         logging.info('Starting...')
         # Schedule one job per Pi-hole instance to monitor
-        for alias in self.config.piholes.keys():
-            job = schedule.every(self.config.interval_seconds).seconds.do(self._run_job, alias=alias)
+        for pihole in self.config.piholes.values():
+            job = schedule.every(self.config.interval_seconds).seconds.do(self._run_job, pihole=pihole)
             job.run() # Run immediately without initial delay
         # Run until stopped
         while True:
@@ -277,12 +382,15 @@ def main():
     parser.add_argument('-i', '--interval',
         type=int,
         help=f'interval (in seconds) between queries to the Pi-hole instance(s) (Default: {DEFAULT_INTERVAL_SECONDS})')
-    parser.add_argument('--pihole-aliases',
+    parser.add_argument('--pihole-alias',
         type=str,
         help=f'comma-separated list of aliases for Pi-hole instances (Default: {DEFAULT_PIHOLE_ALIAS})')
-    parser.add_argument('--pihole-addresses',
+    parser.add_argument('--pihole-address',
         type=str,
         help=f'comma-separated list of addresses for Pi-hole instances (Default: {DEFAULT_PIHOLE_ADDRESS})')
+    parser.add_argument('--pihole-token',
+        type=str,
+        help=f'comma-separated list of Pi-hole API tokens (Default: {DEFAULT_PIHOLE_TOKEN})')
     parser.add_argument('--influxdb-address',
         type=str,
         help=f'address of the InfluxDB server (Default: {DEFAULT_INFLUXDB_ADDRESS})')
