@@ -142,13 +142,6 @@ class PiholeInfluxDB():
             return response.json()
         return None
 
-    # def _get_authorized_stats(self, pihole):
-    #     response = self._pihole_api_get(pihole, "topItems", pihole.token)
-    #     if response:
-    #         logging.debug(response.json())
-    #         return response.json()
-    #     return None
-
     '''
     Gets the number of blocked and total domains in 10 minute intervals over the past 24 hours for the instance.
     '''
@@ -343,7 +336,6 @@ class PiholeInfluxDB():
         query_start = datetime.now()
         stats = self._get_stats(pihole)
         domains_over_time, ads_over_time = self._get_10min_data(pihole)
-        # authorized_stats = self._get_authorized_stats(pihole) if pihole.token else None
         query_end = datetime.now()
         if stats and domains_over_time and ads_over_time:
             logging.info(f'[{pihole.alias}] Queried successfully in {int((query_end - query_start).total_seconds() * 1000)}ms')
