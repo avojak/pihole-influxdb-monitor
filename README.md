@@ -2,7 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/avojak/pihole-influxdb)
 ![Docker Pulls](https://img.shields.io/docker/pulls/avojak/pihole-influxdb)
 
-# Pi-hole InfluxDB
+# Pi-hole InfluxDB Monitor
 
 Export Pi-hole statistics to InfluxDB 2.x.
 
