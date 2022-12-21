@@ -2,6 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/avojak/pihole-influxdb)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/avojak/pihole-influxdb?sort=semver)
 ![Docker Pulls](https://img.shields.io/docker/pulls/avojak/pihole-influxdb)
+![Image Size](https://img.shields.io/docker/image-size/avojak/pihole-influxdb/latest)
 
 # Pi-hole InfluxDB Monitor
 
