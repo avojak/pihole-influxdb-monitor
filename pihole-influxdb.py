@@ -146,10 +146,13 @@ class PiholeInfluxDB():
     Gets the number of blocked and total domains in 10 minute intervals over the past 24 hours for the instance.
     '''
     def _get_10min_data(self, pihole):
-        response = self._pihole_api_get(pihole, "overTimeData10mins")
+        response = self._pihole_api_get(pihole, "overTimeData10mins", pihole.token)
         if response:
             logging.debug(response.json())
             data = response.json()
+            if data == []:
+                logging.warning('No data in response')
+                return None, None
             return dict(data['domains_over_time']), dict(data['ads_over_time'])
         return None, None
 
