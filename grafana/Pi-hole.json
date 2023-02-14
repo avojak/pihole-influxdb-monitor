@@ -1,8 +1,8 @@
 {
   "__inputs": [
     {
-      "name": "DS_INFLUXDB-FLUX",
-      "label": "InfluxDB-Flux",
+      "name": "DS_INFLUXDB_PIHOLE",
+      "label": "InfluxDB_pihole",
       "description": "",
       "type": "datasource",
       "pluginId": "influxdb",
@@ -14,6 +14,14 @@
       "description": "",
       "type": "datasource",
       "pluginId": "__expr__"
+    },
+    {
+      "name": "DS_INFLUXDB",
+      "label": "InfluxDB",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
     }
   ],
   "__elements": {},
@@ -33,7 +41,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.2.4"
+      "version": "9.3.2"
     },
     {
       "type": "datasource",
@@ -92,7 +100,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -150,14 +158,14 @@
         },
         "textMode": "value_and_name"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"status\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"status\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
@@ -166,7 +174,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -210,14 +218,14 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"dns_queries_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"dns_queries_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -226,7 +234,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -270,14 +278,14 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_blocked_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_blocked_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -286,7 +294,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -331,14 +339,14 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_percentage_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_percentage_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -347,7 +355,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -391,14 +399,14 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_being_blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_being_blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -407,7 +415,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -450,14 +458,14 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gravity\")\n  |> filter(fn: (r) => r[\"_field\"] == \"seconds_since_update\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gravity\")\n  |> filter(fn: (r) => r[\"_field\"] == \"seconds_since_update\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
@@ -466,7 +474,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "description": "",
       "fieldConfig": {
@@ -490,6 +498,9 @@
             "lineWidth": 1,
             "scaleDistribution": {
               "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
           "mappings": [],
@@ -558,15 +569,15 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": true,
           "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
@@ -606,7 +617,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -705,12 +716,12 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": true,
           "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
@@ -719,10 +730,10 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
           "refId": "B"
         }
       ],
@@ -747,7 +758,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -846,12 +857,12 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": true,
           "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
@@ -860,10 +871,10 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_ads\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_ads\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
           "refId": "B"
         }
       ],
@@ -888,7 +899,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -987,12 +998,12 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "9.3.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": true,
           "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
@@ -1001,10 +1012,10 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_sources\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_sources\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
           "refId": "B"
         }
       ],
@@ -1029,7 +1040,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -1189,9 +1200,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"forward_destinations\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"forward_destinations\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
@@ -1224,7 +1235,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB-FLUX}"
+        "uid": "${DS_INFLUXDB_PIHOLE}"
       },
       "fieldConfig": {
         "defaults": {
@@ -1384,9 +1395,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB-FLUX}"
+            "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"query_types\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r._value > 0)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"query_types\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r._value > 0)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
@@ -1399,16 +1410,38 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_INFLUXDB}"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(bucket: \"pihole\", tag: \"alias\")",
+        "description": "",
+        "hide": 0,
+        "includeAll": false,
+        "label": "alias",
+        "multi": false,
+        "name": "alias",
+        "options": [],
+        "query": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(bucket: \"pihole\", tag: \"alias\")",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Pi-hole",
   "uid": "zLZsJ9v4k",
-  "version": 29,
+  "version": 18,
   "weekStart": ""
 }
