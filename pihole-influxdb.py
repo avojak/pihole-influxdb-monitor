@@ -311,15 +311,14 @@ class PiholeInfluxDB():
             ))
         
         # Batch write of points
+        influxdb_client = InfluxDBClient(url=self.config.influxdb_address, token=self.config.influxdb_token, org=self.config.influxdb_org, verify_ssl=self.config.influxdb_verify_ssl)
         try:
-            influxdb_client = InfluxDBClient(url=self.config.influxdb_address, token=self.config.influxdb_token, org=self.config.influxdb_org, verify_ssl=self.config.influxdb_verify_ssl)
-            write_api = influxdb_client.write_api(write_options=SYNCHRONOUS)
-            write_api.write(self.config.influxdb_bucket, self.config.influxdb_org, record=points)
-            return True
-        except:
+            with influxdb_client.write_api(write_options=SYNCHRONOUS) as write_api:
+                write_api.write(self.config.influxdb_bucket, self.config.influxdb_org, record=points)
+        except Exception as e:
+            logging.error(f'Error writing data to InfluxDB: {str(e)}')
             return False
-        finally:
-            write_api.close()
+        return True
 
     '''
     Utility function to take a JSON object and convert the fields to a comma-separated list of key-value pairs.
