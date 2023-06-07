@@ -20,6 +20,7 @@ Export Pi-hole statistics to InfluxDB 2.x.
 | `INFLUXDB_ORG` | InfluxDB organization | `my-org` |
 | `INFLUXDB_TOKEN` | InfluxDB auth token |  |
 | `INFLUXDB_BUCKET` | InfluxDB bucket for storing the data | `pihole` |
+| `INFLUXDB_CREATE_BUCKET` | Whether or not to create the InfluxDB bucket if it does not already exist | `False` |
 | `INFLUXDB_VERIFY_SSL` | Whether or not to verify the InfluxDB SSL certificate (only applicable when using an HTTPS address) | `True` |
 
 \* *Note: only required to retrieve data on top DNS queries, clients, etc.*

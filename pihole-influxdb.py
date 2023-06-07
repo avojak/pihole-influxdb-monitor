@@ -8,7 +8,7 @@ import schedule
 import signal
 import time
 from datetime import datetime
-from influxdb_client import InfluxDBClient, Point
+from influxdb_client import InfluxDBClient, Point, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.domain.write_precision import WritePrecision
 from itertools import zip_longest
@@ -25,6 +25,7 @@ DEFAULT_INFLUXDB_ADDRESS = 'http://influxdb:8086'
 DEFAULT_INFLUXDB_ORG = 'my-org'
 DEFAULT_INFLUXDB_TOKEN = None
 DEFAULT_INFLUXDB_BUCKET = 'pihole'
+DEFAULT_INFLUXDB_CREATE_BUCKET = False
 DEFAULT_INFLUXDB_VERIFY_SSL = True
 
 DEBUG = False
@@ -73,6 +74,7 @@ class Config():
             logging.error('No InfluxDB auth token provided')
             exit(1)
         self.influxdb_bucket = args.influxdb_bucket or os.getenv("INFLUXDB_BUCKET", DEFAULT_INFLUXDB_BUCKET)
+        self.influxdb_create_bucket = args.influxdb_create_bucket or os.getenv("INFLUXDB_CREATE_BUCKET", DEFAULT_INFLUXDB_CREATE_BUCKET)
         self.influxdb_verify_ssl = bool(args.influxdb_skip_verify_ssl if args.influxdb_skip_verify_ssl is not None else os.getenv("INFLUXDB_VERIFY_SSL", DEFAULT_INFLUXDB_VERIFY_SSL))
 
     '''
@@ -96,6 +98,26 @@ class PiholeInfluxDB():
 
     def __init__(self, config):
         self.config = config
+
+    '''
+    Ensure that the target InfluxDB bucket exists, creating it if necessary.
+    '''
+    def _verify_bucket(self):
+        influxdb_client = InfluxDBClient(url=self.config.influxdb_address, token=self.config.influxdb_token, org=self.config.influxdb_org, verify_ssl=self.config.influxdb_verify_ssl)
+        try:
+            buckets_api = influxdb_client.buckets_api()
+            if buckets_api.find_bucket_by_name(self.config.influxdb_bucket) is None:
+                if self.config.influxdb_create_bucket:
+                    logging.info(f'InfluxDB bucket does not yet exist - creating...')
+                    retention_rules = BucketRetentionRules(type="expire", every_seconds=604800) # 7-day retention
+                    buckets_api.create_bucket(bucket_name=self.config.influxdb_bucket, org=self.config.influxdb_org, retention_rules=retention_rules)
+                else:
+                    logging.error(f'InfluxDB bucket does not exist')
+                    return False
+        except Exception as e:
+            logging.error(f'Error creating InfluxDB bucket: {str(e)}')
+            return False
+        return True
 
     '''
     Execute a GET request against the Pi-hole API.
@@ -352,6 +374,9 @@ class PiholeInfluxDB():
     '''
     def start(self):
         logging.info('Starting...')
+        # Ensure the target bucket exists
+        if not self._verify_bucket():
+            exit(1)
         # Schedule one job per Pi-hole instance to monitor
         for pihole in self.config.piholes.values():
             job = schedule.every(self.config.interval_seconds).seconds.do(self._run_job, pihole=pihole)
@@ -394,6 +419,9 @@ def main():
     parser.add_argument('--influxdb-bucket',
         type=str,
         help=f'InfluxDB bucket to store data (Default: {DEFAULT_INFLUXDB_BUCKET})')
+    parser.add_argument('--influxdb-create-bucket',
+        action='store_true',
+        help=f'Create the InfluxDB bucket if it does not already exist')
     parser.add_argument('--influxdb-token',
         type=str,
         help=f'InfluxDB auth token (Default: {DEFAULT_INFLUXDB_TOKEN})')
