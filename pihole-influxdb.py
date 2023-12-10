@@ -21,6 +21,9 @@ DEFAULT_PIHOLE_ALIAS = 'pihole'
 DEFAULT_PIHOLE_ADDRESS = 'http://pi.hole:80'
 DEFAULT_PIHOLE_TOKEN = None
 
+DEFAULT_PIHOLE_NUM_TOP_ITEMS = 10
+DEFAULT_PIHOLE_NUM_TOP_CLIENTS = 10
+
 DEFAULT_INFLUXDB_ADDRESS = 'http://influxdb:8086'
 DEFAULT_INFLUXDB_ORG = 'my-org'
 DEFAULT_INFLUXDB_TOKEN = None
@@ -67,6 +70,8 @@ class Config():
             if not token:
                 logging.warning(f'No auth token provided for {alias}, some data will not be available')
             self.piholes[address] = Pihole(alias, address, token)
+        self.num_top_items = int(args.pihole_num_top_items or os.getenv("PIHOLE_NUM_TOP_ITEMS", DEFAULT_PIHOLE_NUM_TOP_ITEMS))
+        self.num_top_clients = int(args.pihole_num_top_clients or os.getenv("PIHOLE_NUM_TOP_CLIENTS", DEFAULT_PIHOLE_NUM_TOP_CLIENTS))
         self.influxdb_address = args.influxdb_address or os.getenv("INFLUXDB_ADDRESS", DEFAULT_INFLUXDB_ADDRESS)
         self.influxdb_org = args.influxdb_org or os.getenv("INFLUXDB_ORG", DEFAULT_INFLUXDB_ORG)
         self.influxdb_token = args.influxdb_token or os.getenv("INFLUXDB_TOKEN", DEFAULT_INFLUXDB_TOKEN)
@@ -157,7 +162,7 @@ class PiholeInfluxDB():
     Gets general Pi-hole statistics for the instance.
     '''
     def _get_stats(self, pihole):
-        queries = ["summaryRaw", "topItems", "topClients", "getForwardDestinations", "getQueryTypes"]
+        queries = ["summaryRaw", f'topItems={self.config.num_top_items}', f'topClients={self.config.num_top_clients}', "getForwardDestinations", "getQueryTypes"]
         response = self._pihole_api_get(pihole, "&".join(queries), pihole.token)
         if response:
             logging.debug(response.json())
@@ -410,6 +415,12 @@ def main():
     parser.add_argument('--pihole-token',
         type=str,
         help=f'comma-separated list of Pi-hole API tokens (Default: {DEFAULT_PIHOLE_TOKEN})')
+    parser.add_argument('--pihole-num-top-items',
+        type=int,
+        help=f'number of top domains queried and ad domains (Default: {DEFAULT_PIHOLE_NUM_TOP_ITEMS})')
+    parser.add_argument('--pihole-num-top-clients',
+        type=int,
+        help=f'number of top clients (Default: {DEFAULT_PIHOLE_NUM_TOP_CLIENTS})')
     parser.add_argument('--influxdb-address',
         type=str,
         help=f'address of the InfluxDB server (Default: {DEFAULT_INFLUXDB_ADDRESS})')
