@@ -14,14 +14,6 @@
       "description": "",
       "type": "datasource",
       "pluginId": "__expr__"
-    },
-    {
-      "name": "DS_INFLUXDB",
-      "label": "InfluxDB",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "influxdb",
-      "pluginName": "InfluxDB"
     }
   ],
   "__elements": {},
@@ -580,7 +572,7 @@
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
           "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"pihole-01\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "B"
         },
         {
@@ -1415,7 +1407,7 @@
         "current": {},
         "datasource": {
           "type": "influxdb",
-          "uid": "${DS_INFLUXDB}"
+          "uid": "${DS_INFLUXDB_PIHOLE}"
         },
         "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(bucket: \"pihole\", tag: \"alias\")",
         "description": "",
