@@ -276,14 +276,16 @@ class PiholeInfluxDB():
                 WritePrecision.S
             ))
         if 'forward_destinations' in stats:
+            forward_destinations = stats.pop('forward_destinations')
             points.append(Point.from_dict(
                 {
                     "measurement": "forward_destinations",
                     "tags": tags,
-                    "fields": stats.pop('forward_destinations'),
+                    "fields": forward_destinations,
                     "time": now_seconds
                 },
-                WritePrecision.S
+                WritePrecision.S,
+                field_types={x: "float" for x in forward_destinations}
             ))
         if 'querytypes' in stats:
             points.append(Point.from_dict(
