@@ -653,7 +653,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Max"
+              "options": "Last"
             },
             "properties": [
               {
@@ -794,7 +794,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Max"
+              "options": "Last"
             },
             "properties": [
               {
@@ -935,7 +935,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Max"
+              "options": "Last"
             },
             "properties": [
               {
