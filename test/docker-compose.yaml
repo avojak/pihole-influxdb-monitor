@@ -1,0 +1,112 @@
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    ports:
+      - 8080:80
+    environment:
+      - "TZ=America/Denver"
+      - "WEBPASSWORD=password123"
+      - "PIHOLE_DNS_=1.1.1.1;1.0.0.1"
+      - "TEMPERATUREUNIT=f"
+      - "DNSMASQ_LISTENING=local"
+      - "FTLCONF_LOCAL_IPV4=127.0.0.1"
+      - "DNS_FQDN_REQUIRED=true"
+      - "DNSSEC=false"
+    networks:
+      testbr:
+        ipv4_address: 10.5.0.5
+
+  influxdb:
+    image: "influxdb:latest"
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - 8086:8086
+    environment:
+      - "DOCKER_INFLUXDB_INIT_MODE=setup"
+      - "DOCKER_INFLUXDB_INIT_USERNAME=admin"
+      - "DOCKER_INFLUXDB_INIT_PASSWORD=password123"
+      - "DOCKER_INFLUXDB_INIT_ORG=test"
+      - "DOCKER_INFLUXDB_INIT_BUCKET=default"
+      - "DOCKER_INFLUXDB_INIT_RETENTION=1w"
+      - "DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admintoken123"
+    networks:
+      testbr:
+
+  # The dashboard YAML file leverages an input variable for selecting the InfluxDB data source. Input variables are
+  # only supported when importing YAML via the UI, not via API provisioning. As a result, we pre-process the YAML
+  # to replace all instances of the variable ${DS_INFLUXDB_PIHOLE} with the discrete value used for testing
+  # as set in the datasource.yml file (InfluxDB-Flux).
+  # 
+  # The downside to this approach is that you cannot test dashboard YAML changes live - you will need to restart
+  # the Docker compose service.
+  grafana-dashboard-preprocessor:
+    image: "alpine:latest"
+    volumes:
+      - ../grafana/Pi-hole.json:/Pi-hole.json
+      - grafana-dashboards:/dashboards/
+    command: sh -c "cp /Pi-hole.json /dashboards/Pi-hole.json && sed -i 's/\$\{DS_INFLUXDB_PIHOLE\}/InfluxDB-Flux/g' /dashboards/Pi-hole.json && cat /dashboards/Pi-hole.json"
+
+  grafana:
+    image: "grafana/grafana-oss:latest"
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - "GF_DEFAULT_INSTANCE_NAME=grafana"
+      - "GF_SECURITY_ADMIN_USER=admin"
+      - "GF_SECURITY_ADMIN_PASSWORD=password123"
+      - "GF_USERS_ALLOW_SIGN_UP=false"
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+      - grafana-dashboards:/var/lib/grafana/dashboards/
+    depends_on:
+      - influxdb
+    networks:
+      testbr:
+
+  pihole-influxdb-monitor:
+    build:
+      context: ../
+    container_name: pihole-influxdb-monitor
+    restart: unless-stopped
+    environment:
+      - "PIHOLE_ALIAS=pihole"
+      - "PIHOLE_ADDRESS=http://pihole"
+      - "PIHOLE_TOKEN=25aa34070a75ce79dcf2496484ad2301de3daa2b80581c9b265eaadb79685303" # The API token is a hash of the web password, so if you decide to change the web password, you will need to change the API token
+      - "INFLUXDB_ADDRESS=http://influxdb:8086"
+      - "INFLUXDB_ORG=test"
+      - "INFLUXDB_TOKEN=admintoken123"
+      - "INFLUXDB_BUCKET=pihole"
+      - "INFLUXDB_CREATE_BUCKET=true"
+    depends_on:
+      - influxdb
+    networks:
+      testbr:
+
+  traffic-generator:
+    build:
+      context: ./traffic-generator
+    restart: unless-stopped
+    depends_on:
+      - pihole
+    networks:
+      testbr:
+    dns:
+      - 10.5.0.5
+    scale: 5
+
+volumes:
+  grafana-dashboards:
+
+networks:
+  testbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
