@@ -742,7 +742,11 @@
         },
         {
           "id": "reduce",
-          "options": {}
+          "options": {
+            "reducers": [
+              "last"
+            ]
+          }
         }
       ],
       "type": "table"
@@ -883,7 +887,11 @@
         },
         {
           "id": "reduce",
-          "options": {}
+          "options": {
+            "reducers": [
+              "last"
+            ]
+          }
         }
       ],
       "type": "table"
@@ -1024,7 +1032,11 @@
         },
         {
           "id": "reduce",
-          "options": {}
+          "options": {
+            "reducers": [
+              "last"
+            ]
+          }
         }
       ],
       "type": "table"
