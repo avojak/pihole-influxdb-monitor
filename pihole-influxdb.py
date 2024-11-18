@@ -288,14 +288,16 @@ class PiholeInfluxDB():
                 field_types={x: "float" for x in forward_destinations}
             ))
         if 'querytypes' in stats:
+            querytypes = stats.pop('querytypes')
             points.append(Point.from_dict(
                 {
                     "measurement": "query_types",
                     "tags": tags,
-                    "fields": stats.pop('querytypes'),
+                    "fields": querytypes,
                     "time": now_seconds
                 },
-                WritePrecision.S
+                WritePrecision.S,
+                field_types={x: "float" for x in querytypes}
             ))
 
         # Remaining stats
