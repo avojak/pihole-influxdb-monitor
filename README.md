@@ -8,6 +8,15 @@
 
 Export Pi-hole statistics to InfluxDB 2.x.
 
+## Pi-hole Compatibility
+
+Due to a change in the Pi-hole API, only Pi-hole version 6 will be supported with the latest 2.x releases of the Pi-hole InfluxDB monitor.
+
+| Pi-hole Version | Pi-hole Influx DB Monitor Version |
+| --------------- | --------------------------------- |
+| `5.x`           | `1.x`                             |
+| `6.x`           | `2.x`                             |
+
 ## Environment Variables
 
 | Name | Description | Default |
