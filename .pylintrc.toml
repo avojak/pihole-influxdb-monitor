@@ -1,0 +1,3 @@
+[tool.pylint]
+disable = ["logging-fstring-interpolation"]
+max-line-length = 120

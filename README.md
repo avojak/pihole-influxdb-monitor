@@ -17,26 +17,36 @@ Due to a change in the Pi-hole API, only Pi-hole version 6 will be supported wit
 | `5.x`           | `1.x`                             |
 | `6.x`           | `2.x`                             |
 
-## Environment Variables
+## Configuration
 
-| Name | Description | Default |
-| ---- | ----------- | ------- |
-| `INTERVAL_SECONDS` | Interval (in seconds) between polling | `60` |
-| `PIHOLE_ALIAS` | Comma-separated list of aliases for the Pi-hole instances | `pihole` |
-| `PIHOLE_ADDRESS` | Comma-separated list of Pi-hole adddresses to poll | `http://pi.hole:80` |
-| `PIHOLE_TOKEN` | Comma-separated list of Pi-hole API tokens* |  |
-| `PIHOLE_NUM_TOP_ITEMS` | Number of top domains and ads to return | `10` |
-| `PIHOLE_NUM_TOP_CLIENTS` | Number of top clients to return | `10` |
-| `INFLUXDB_ADDRESS` | Address of the InfluxDB instance | `http://influxdb:8086` |
-| `INFLUXDB_ORG` | InfluxDB organization | `my-org` |
-| `INFLUXDB_TOKEN` | InfluxDB auth token |  |
-| `INFLUXDB_BUCKET` | InfluxDB bucket for storing the data | `pihole` |
-| `INFLUXDB_CREATE_BUCKET` | Whether or not to create the InfluxDB bucket if it does not already exist | `False` |
-| `INFLUXDB_VERIFY_SSL` | Whether or not to verify the InfluxDB SSL certificate (only applicable when using an HTTPS address) | `True` |
+The application can be configured by providing either environment variables, or CLI options.
+
+TODO: Getting application token
+
+It is recommended to create an application password rather than using the admin password.
+
+### Environment Variables
+
+| Environment Variable | CLI Option | Description | Default |
+| -------------------- | ---------- | ----------- | ------- |
+| `INTERVAL_SECONDS` | `-i`, `--interval` | Interval (in seconds) between polling | `60` |
+| `PIHOLE_ALIAS` | `--pihole-alias` | Comma-separated list of aliases for the Pi-hole instances | `pihole` |
+| `PIHOLE_ADDRESS` | `--pihole-address` | Comma-separated list of Pi-hole adddresses to poll | `http://pi.hole:80` |
+| `PIHOLE_PASSWORD` | `--pihole-password` | Comma-separated list of Pi-hole API passwords* |  |
+| `PIHOLE_NUM_TOP_ITEMS` | `--pihole-num-top-items` | Number of top domains and ads to return | `10` |
+| `PIHOLE_NUM_TOP_CLIENTS` | `--pihole-num-top-clients` | Number of top clients to return | `10` |
+| `INFLUXDB_ADDRESS` | `--influxdb-address` | Address of the InfluxDB instance | `http://influxdb:8086` |
+| `INFLUXDB_ORG` | `--influxdb-org` | InfluxDB organization | `my-org` |
+| `INFLUXDB_TOKEN` | `--influxdb-token` | InfluxDB auth token |  |
+| `INFLUXDB_BUCKET` | `--influxdb-bucket` | InfluxDB bucket for storing the data | `pihole` |
+| `INFLUXDB_CREATE_BUCKET` | `--influxdb-create-bucket` | Whether or not to create the InfluxDB bucket if it does not already exist | `False` |
+| `INFLUXDB_VERIFY_SSL` | `--influxdb-skip-verify-ssl` | Whether or not to verify the InfluxDB SSL certificate (only applicable when using an HTTPS address) | Environment variable: `True`, CLI Option: `false` |
 
 \* *Note: only required to retrieve data on top DNS queries, clients, etc.*
 
-## Docker
+## Example Usage
+
+### Docker
 
 ```bash
 docker run -d \
@@ -52,7 +62,7 @@ docker run -d \
     avojak/pihole-influxdb:latest
 ```
 
-## Docker Compose
+### Docker Compose
 
 ```yaml
 version: "3.9"
@@ -73,7 +83,7 @@ services:
       - "INFLUXDB_BUCKET=pihole"
 ```
 
-## Command Line
+### Command Line
 
 ```bash
 python3 pihole-influxdb.py \
