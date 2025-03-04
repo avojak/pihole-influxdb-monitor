@@ -17,6 +17,8 @@ Due to a change in the Pi-hole API, only Pi-hole version 6 will be supported wit
 | `5.x`           | `1.x`                             |
 | `6.x`           | `2.x`                             |
 
+TODO: Document changes to fields as best as possible
+
 ## Configuration
 
 The application can be configured by providing either environment variables, or CLI options.
