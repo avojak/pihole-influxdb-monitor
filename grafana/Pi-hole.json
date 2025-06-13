@@ -1090,6 +1090,27 @@
           }
         },
         {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^\\|(.*)$",
+            "renamePattern": "null|$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^(.*)\\|(.*)$",
+            "renamePattern": "$2 ($1)"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^(.*) \\(null\\)$",
+            "renamePattern": "$1"
+          }
+        },
+        {
           "id": "reduce",
           "options": {
             "reducers": [
