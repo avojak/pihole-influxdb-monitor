@@ -4,6 +4,6 @@ image:
 
 .PHONY: lint
 lint:
-	pylint pihole-influxdb.py
+	pylint pihole_influxdb.py
 
 all: image

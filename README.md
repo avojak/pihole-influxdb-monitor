@@ -10,22 +10,41 @@ Export Pi-hole statistics to InfluxDB 2.x.
 
 ## Pi-hole Compatibility
 
-Due to a change in the Pi-hole API, only Pi-hole version 6 will be supported with the latest 2.x releases of the Pi-hole InfluxDB monitor.
+> [!IMPORTANT]  
+> Due to a change in the Pi-hole API, only Pi-hole version 6 will be supported with the latest 2.x releases of the Pi-hole InfluxDB monitor.
 
 | Pi-hole Version | Pi-hole Influx DB Monitor Version |
 | --------------- | --------------------------------- |
 | `5.x`           | `1.x`                             |
 | `6.x`           | `2.x`                             |
 
-TODO: Document changes to fields as best as possible
+## Upgrading to 2.x
+
+Upgrading to version 2.x is a non-passive update.
+
+> [!CAUTION]
+> The underlying structure of the data stored in the InfluxDB bucket has changed with version 2.x. As a result, it's recommended to create a
+> new bucket.
+
+### Changes to Measurements and Fields
+
+| `1.x` Measurement | `2.x` Equivalent |
+| ----------------- | ----------------- |
+| `replies` | `query_replies` |
+| `top_queries` | `top_permitted_domains` |
+| `top_ads` | `top_blocked_domains` |
+| `top_sources` | `top_clients` |
+| `forward_destinations` | `upstreams` |
+| `status` | `blocking` | 
+| `ads_over_time` and `domains_over_time` | `history` |
 
 ## Configuration
 
 The application can be configured by providing either environment variables, or CLI options.
 
-TODO: Getting application token
-
-It is recommended to create an application password rather than using the admin password.
+> [!NOTE]
+> It is recommended to use an application password rather than using the admin password. One application password can be generated from the web
+> interface on the settings page (https://docs.pi-hole.net/api/auth/).
 
 ### Environment Variables
 
@@ -44,7 +63,7 @@ It is recommended to create an application password rather than using the admin 
 | `INFLUXDB_CREATE_BUCKET` | `--influxdb-create-bucket` | Whether or not to create the InfluxDB bucket if it does not already exist | `False` |
 | `INFLUXDB_VERIFY_SSL` | `--influxdb-skip-verify-ssl` | Whether or not to verify the InfluxDB SSL certificate (only applicable when using an HTTPS address) | Environment variable: `True`, CLI Option: `false` |
 
-\* *Note: only required to retrieve data on top DNS queries, clients, etc.*
+\* *Note: required for most, but not all, API endpoints*
 
 ## Example Usage
 
@@ -88,7 +107,7 @@ services:
 ### Command Line
 
 ```bash
-python3 pihole-influxdb.py \
+python3 pihole_influxdb.py \
     --pihole-alias "pihole" \
     --pihole-address "http://pi.hole" \
     --pihole-token "pihole_api_token" \

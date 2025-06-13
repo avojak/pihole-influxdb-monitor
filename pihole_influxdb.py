@@ -13,6 +13,7 @@ import argparse
 import logging
 import os
 import signal
+import sys
 import time
 from datetime import datetime
 from itertools import zip_longest
@@ -25,21 +26,21 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.domain.write_precision import WritePrecision
 
 
-DEFAULT_INTERVAL_SECONDS = 60
+DEFAULT_INTERVAL_SECONDS = '60'
 
 DEFAULT_PIHOLE_ALIAS = 'pihole'
 DEFAULT_PIHOLE_ADDRESS = 'http://pi.hole:80'
 DEFAULT_PIHOLE_PASSWORD = None
 
-DEFAULT_PIHOLE_NUM_TOP_ITEMS = 10
-DEFAULT_PIHOLE_NUM_TOP_CLIENTS = 10
+DEFAULT_PIHOLE_NUM_TOP_ITEMS = '10'
+DEFAULT_PIHOLE_NUM_TOP_CLIENTS = '10'
 
 DEFAULT_INFLUXDB_ADDRESS = 'http://influxdb:8086'
 DEFAULT_INFLUXDB_ORG = 'my-org'
 DEFAULT_INFLUXDB_TOKEN = None
 DEFAULT_INFLUXDB_BUCKET = 'pihole'
-DEFAULT_INFLUXDB_CREATE_BUCKET = False
-DEFAULT_INFLUXDB_VERIFY_SSL = True
+DEFAULT_INFLUXDB_CREATE_BUCKET = 'False'
+DEFAULT_INFLUXDB_VERIFY_SSL = 'True'
 
 DEBUG = False
 
@@ -186,10 +187,10 @@ class Config():
         pihole_addresses = (args.pihole_address or os.getenv("PIHOLE_ADDRESS", DEFAULT_PIHOLE_ADDRESS)).split(',')
         if len(pihole_addresses) == 0:
             logging.error("No Pi-hole instances provided")
-            exit(1)
+            sys.exit(1)
         if len(pihole_aliases) != len(pihole_addresses):
             logging.error('The number of Pi-hole aliases provided does not match the number of Pi-hole addresses')
-            exit(1)
+            sys.exit(1)
         pihole_passwords = (args.pihole_password or os.getenv("PIHOLE_PASSWORD", DEFAULT_PIHOLE_PASSWORD))
         pihole_passwords = pihole_passwords.split(',') if pihole_passwords else []
         self.piholes = {}
@@ -212,10 +213,10 @@ class Config():
         self.influxdb_token = args.influxdb_token or os.getenv("INFLUXDB_TOKEN", DEFAULT_INFLUXDB_TOKEN)
         if not self.influxdb_token:
             logging.error('No InfluxDB auth token provided')
-            exit(1)
+            sys.exit(1)
         self.influxdb_bucket = args.influxdb_bucket or os.getenv("INFLUXDB_BUCKET", DEFAULT_INFLUXDB_BUCKET)
-        self.influxdb_create_bucket = args.influxdb_create_bucket or os.getenv("INFLUXDB_CREATE_BUCKET",
-                                                                               DEFAULT_INFLUXDB_CREATE_BUCKET)
+        self.influxdb_create_bucket = bool(args.influxdb_create_bucket or os.getenv("INFLUXDB_CREATE_BUCKET",
+                                                                               DEFAULT_INFLUXDB_CREATE_BUCKET))
         self.influxdb_verify_ssl = bool(args.influxdb_skip_verify_ssl if args.influxdb_skip_verify_ssl is not None
                                         else os.getenv("INFLUXDB_VERIFY_SSL", DEFAULT_INFLUXDB_VERIFY_SSL))
 
@@ -235,9 +236,12 @@ class Config():
         logging.info(f'InfluxDB bucket:     {self.influxdb_bucket}')
         logging.info(f'InfluxDB verify SSL: {self.influxdb_verify_ssl}')
         logging.info('===================================================')
-        return
 
 class PiholeInfluxDB():
+    """
+    Main application class for polling data from Pi-hole instances and writing
+    measurements to an InfluxDB bucket.
+    """
 
     def __init__(self, config):
         self.config = config
@@ -262,18 +266,18 @@ class PiholeInfluxDB():
                 else:
                     logging.error('InfluxDB bucket does not exist')
                     return False
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-exception-caught
             logging.error(f'Error creating InfluxDB bucket: {str(e)}')
             return False
         return True
 
-    def _create_point(self, measurement: str, tags: dict, fields: dict, time: int, field_types: dict):
+    def _create_point(self, measurement: str, tags: dict, fields: dict, measurement_time: int, field_types: dict):
         return Point.from_dict(
             {
                 "measurement": measurement,
                 "tags": tags,
                 "fields": fields,
-                "time": time
+                "time": measurement_time
             },
             WritePrecision.S,
             field_types = field_types
@@ -333,38 +337,50 @@ class PiholeInfluxDB():
 
         if top_clients:
             clients = top_clients.pop("clients")
-            data = {"top_clients": ','.join([f'{x.get("name", "null")}|{x["ip"]}:{x["count"]}' for x in clients])}
+            data = {
+                "top_clients": ','.join([f'{x.get("name", "null")}|{x["ip"]}:{x["count"]}' for x in clients])
+            }
             points.append(self._create_point("top_clients", tags, data, now_seconds, {x: "str" for x in data}))
 
         if top_permitted_domains:
             permitted_domains = top_permitted_domains.pop("domains")
-            data = {"top_permitted_domains": ','.join([f'{x["domain"]}:{x["count"]}' for x in permitted_domains])}
-            points.append(self._create_point("top_permitted_domains", tags, data, now_seconds, {x: "str" for x in data}))
+            data = {
+                "top_permitted_domains": ','.join([f'{x["domain"]}:{x["count"]}' for x in permitted_domains])
+            }
+            points.append(self._create_point("top_permitted_domains", tags, data, now_seconds,
+                                             {x: "str" for x in data}))
 
         if top_blocked_domains:
             blocked_domains = top_blocked_domains.pop("domains")
-            data = {"top_blocked_domains": ','.join([f'{x["domain"]}:{x["count"]}' for x in blocked_domains])}
+            data = {
+                "top_blocked_domains": ','.join([f'{x["domain"]}:{x["count"]}' for x in blocked_domains])
+            }
             points.append(self._create_point("top_blocked_domains", tags, data, now_seconds, {x: "str" for x in data}))
 
         if upstreams:
             upstream_data = upstreams.pop("upstreams")
             # We'll structure this data consistently, then it's up to the dashboard creator to format as desired
-            count_data = {f'{x.get("name", "null")} ({x.get("ip", "null")}:{x["port"]})': x["count"] for x in upstream_data}
-            points.append(self._create_point("upstreams", tags, count_data, now_seconds, {x: "uint" for x in count_data}))
+            count_data = {
+                f'{x.get("name", "null")} ({x.get("ip", "null")}:{x["port"]})': x["count"] for x in upstream_data
+            }
+            points.append(self._create_point("upstreams", tags, count_data, now_seconds,
+                                             {x: "uint" for x in count_data}))
             # TODO: Can add other points for latency data, etc.
 
         if history:
             query_history = history.pop("history")
             for datapoint in query_history:
                 timestamp = int(datapoint.pop("timestamp"))
-                points.append(self._create_point("history", tags, datapoint, timestamp, {x: "uint" for x in datapoint}))
+                points.append(self._create_point("history", tags, datapoint, timestamp,
+                                                 {x: "uint" for x in datapoint}))
 
         if blocking:
             blocking_status = {
                 "blocking": blocking["blocking"],
                 "timer": blocking["timer"] if blocking["timer"] is not None else -1
             }
-            points.append(self._create_point("blocking", tags, blocking_status, now_seconds, {"blocking": "str", "timer": "int"}))
+            points.append(self._create_point("blocking", tags, blocking_status, now_seconds,
+                                             {"blocking": "str", "timer": "int"}))
 
         # Batch write of points
         influxdb_client = InfluxDBClient(url=self.config.influxdb_address,
@@ -374,7 +390,7 @@ class PiholeInfluxDB():
         try:
             with influxdb_client.write_api(write_options=SYNCHRONOUS) as write_api:
                 write_api.write(self.config.influxdb_bucket, self.config.influxdb_org, record=points)
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-exception-caught
             logging.error(f'Error writing data to InfluxDB: {str(e)}')
             return False
         return True
@@ -398,7 +414,6 @@ class PiholeInfluxDB():
                                    history, blocking):
             write_duration = int((datetime.now() - write_start).total_seconds() * 1000)
             logging.info(f'[{pihole.alias}] Wrote to InfluxDB successfully in {write_duration}ms')
-        return
 
     def start(self):
         """
@@ -407,7 +422,7 @@ class PiholeInfluxDB():
         logging.info('Starting...')
         # Ensure the target bucket exists
         if not self._verify_bucket():
-            exit(1)
+            sys.exit(1)
         # Schedule one job per Pi-hole instance to monitor
         for pihole in self.config.piholes.values():
             job = schedule.every(self.config.interval_seconds).seconds.do(self._run_job, pihole=pihole)
@@ -417,16 +432,19 @@ class PiholeInfluxDB():
             schedule.run_pending()
             time.sleep(1)
 
-def signal_handler(signum, frame):
+def signal_handler(signum, frame): # pylint: disable=unused-argument
     """
     Handler for SIGTERM and SIGINT signals.
     """
     if signum in [signal.SIGTERM, signal.SIGINT]:
         logging.info('Stopping...')
-        exit(0)
-    exit(1)
+        sys.exit(0)
+    sys.exit(1)
 
 def main():
+    """
+    Main application entrypoint.
+    """
     # Parse any command-line arguments, which take a higher precedence than environment variables
     parser = argparse.ArgumentParser(description='Query Pi-hole instances for statistics and store them in InfluxDB')
     parser.add_argument('-i', '--interval',

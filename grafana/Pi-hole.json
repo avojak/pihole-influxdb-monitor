@@ -1129,13 +1129,13 @@
           "id": "renameByRegex",
           "options": {
             "regex": "^(.*)\\|(.*)$",
-            "renamePattern": "$2 ($1)"
+            "renamePattern": "$1 ($2)"
           }
         },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "^(.*) \\(null\\)$",
+            "regex": "^null \\((.*)\\)$",
             "renamePattern": "$1"
           }
         },
