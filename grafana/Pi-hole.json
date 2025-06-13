@@ -85,9 +85,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 1,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -130,8 +129,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -173,6 +171,7 @@
           "refId": "A"
         }
       ],
+      "title": "",
       "transformations": [
         {
           "id": "organize",
@@ -207,8 +206,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -251,6 +249,7 @@
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -270,8 +269,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -314,6 +312,7 @@
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -334,8 +333,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -378,6 +376,7 @@
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -397,8 +396,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -441,6 +439,7 @@
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -458,8 +457,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -502,6 +500,7 @@
           "refId": "A"
         }
       ],
+      "title": "",
       "transformations": [
         {
           "id": "calculateField",
@@ -577,8 +576,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -708,8 +706,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -857,8 +854,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1006,8 +1002,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1348,7 +1343,7 @@
           },
           "decimals": 2,
           "mappings": [],
-          "unit": "percent"
+          "unit": "percentunit"
         },
         "overrides": [
           {
@@ -1498,12 +1493,66 @@
           },
           "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"query_types\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r._value > 0)\n  |> yield(name: \"last\")",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "62cc40f2"
+          },
+          "hide": false,
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"queries\")\n  |> filter(fn: (r) => r[\"_field\"] == \"total\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"last\")",
+          "refId": "B"
         }
       ],
       "title": "Query Types",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byType",
+                  "options": "number"
+                }
+              },
+              "operator": "/",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "total {alias=\"pihole\", hostname=\"pihole\", name=\"queries\"}"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "Time",
+                "A",
+                "AAAA",
+                "PTR"
+              ]
+            }
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {}
+        }
+      ],
       "type": "piechart"
     }
   ],
+  "preload": false,
   "refresh": "",
   "schemaVersion": 40,
   "tags": [],
@@ -1536,6 +1585,6 @@
   "timezone": "",
   "title": "Pi-hole",
   "uid": "zLZsJ9v4k",
-  "version": 18,
+  "version": 1,
   "weekStart": ""
 }
