@@ -795,22 +795,13 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
-          "refId": "B"
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_permitted_domains\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
         }
       ],
       "timeFrom": "24h",
-      "title": "Top Queries",
+      "title": "Top Allowed Domains",
       "transformations": [
         {
           "id": "extractFields",
@@ -943,22 +934,13 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_ads\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
-          "refId": "B"
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_blocked_domains\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
         }
       ],
       "timeFrom": "24h",
-      "title": "Top Ads",
+      "title": "Top Blocked Domains",
       "transformations": [
         {
           "id": "extractFields",
@@ -1091,22 +1073,13 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_sources\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
-          "refId": "B"
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_clients\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
         }
       ],
       "timeFrom": "24h",
-      "title": "Top Sources",
+      "title": "Top Clients",
       "transformations": [
         {
           "id": "extractFields",

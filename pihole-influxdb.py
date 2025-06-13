@@ -333,18 +333,18 @@ class PiholeInfluxDB():
 
         if top_clients:
             clients = top_clients.pop("clients")
-            data = {"top_clients": ','.join([f'{x["ip"]}|{x["name"]}|{x["count"]}' for x in clients])}
+            data = {"top_clients": ','.join([f'{x["ip"]}|{x["name"]}:{x["count"]}' for x in clients])}
             points.append(self._create_point("top_clients", tags, data, now_seconds, {x: "str" for x in data}))
 
         if top_permitted_domains:
             permitted_domains = top_permitted_domains.pop("domains")
-            data = {"top_permitted_domains": ','.join([f'{x["domain"]}|{x["count"]}' for x in permitted_domains])}
+            data = {"top_permitted_domains": ','.join([f'{x["domain"]}:{x["count"]}' for x in permitted_domains])}
             points.append(self._create_point("top_permitted_domains", tags, data, now_seconds,
                                              {x: "str" for x in data}))
 
         if top_blocked_domains:
             blocked_domains = top_blocked_domains.pop("domains")
-            data = {"top_blocked_domains": ','.join([f'{x["domain"]}|{x["count"]}' for x in blocked_domains])}
+            data = {"top_blocked_domains": ','.join([f'{x["domain"]}:{x["count"]}' for x in blocked_domains])}
             points.append(self._create_point("top_blocked_domains", tags, data, now_seconds, {x: "str" for x in data}))
 
         if upstreams:
