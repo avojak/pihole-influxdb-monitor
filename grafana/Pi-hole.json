@@ -1144,9 +1144,8 @@
               "viz": false
             }
           },
-          "decimals": 2,
-          "mappings": [],
-          "unit": "percent"
+          "decimals": 0,
+          "mappings": []
         },
         "overrides": [
           {
@@ -1167,88 +1166,13 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Other"
+              "options": "Cache"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
                   "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "one.one.one.one#53|1.0.0.1#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "one.one.one.one#53|1.1.1.1#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "resolver1.opendns.com#53|208.67.222.222#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "semi-dark-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "resolver2.opendns.com#53|208.67.220.220#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cached"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "orange",
                   "mode": "fixed"
                 }
               }
@@ -1270,7 +1194,7 @@
           "placement": "right",
           "showLegend": true,
           "values": [
-            "value"
+            "percent"
           ]
         },
         "pieType": "donut",
@@ -1294,31 +1218,31 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"forward_destinations\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"upstreams\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
-      "title": "Forward Destinations",
+      "title": "Upstream Destinations",
       "transformations": [
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "(cached\\|cached)",
-            "renamePattern": "Cached"
+            "regex": "cache \\(cache:-1\\)",
+            "renamePattern": "Cache"
           }
         },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "(blocked\\|blocked)",
+            "regex": "blocklist \\(blocklist:-1\\)",
             "renamePattern": "Blocked"
           }
         },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "(other\\|other)",
-            "renamePattern": "Other"
+            "regex": "(.*)\\((.*):(.*)\\)",
+            "renamePattern": "$1 ($2)"
           }
         }
       ],

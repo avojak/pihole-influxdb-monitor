@@ -108,4 +108,4 @@ Simple dashboard in Grafana (See: [grafana/Pi-hole.json](grafana/Pi-hole.json)):
 
 ## References
 
-Rough API documentation for the Pi-hole API is available here: https://discourse.pi-hole.net/t/pi-hole-api/1863
+Rough API documentation for the Pi-hole API is available here: https://ftl.pi-hole.net/master/docs/ (or the `/api/docs` endpoint of a running Pi-hole instance)

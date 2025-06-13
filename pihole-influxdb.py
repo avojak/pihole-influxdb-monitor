@@ -349,8 +349,10 @@ class PiholeInfluxDB():
 
         if upstreams:
             upstream_data = upstreams.pop("upstreams")
-            data = {"upstreams": ','.join([f'{x["ip"]}|{x["name"]}|{x["port"]}|{x["count"]}|{x["statistics"]["response"]}|{x["statistics"]["variance"]}' for x in upstream_data])}
-            points.append(self._create_point("upstreams", tags, data, now_seconds, {x: "str" for x in data}))
+            # We'll structure this data consistently, then it's up to the dashboard creator to format as desired
+            count_data = {f'{x.get("name", "null")} ({x.get("ip", "null")}:{x["port"]})': x["count"] for x in upstream_data}
+            points.append(self._create_point("upstreams", tags, count_data, now_seconds, {x: "uint" for x in count_data}))
+            # TODO: Can add other points for latency data, etc.
 
         if history:
             query_history = history.pop("history")
