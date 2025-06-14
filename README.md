@@ -26,6 +26,12 @@ Upgrading to version 2.x is a non-passive update.
 > The underlying structure of the data stored in the InfluxDB bucket has changed with version 2.x. As a result, it's recommended to create a
 > new bucket.
 
+### Changes to Environment Variables
+
+| `1.x` Environment Variable | `2.x` Equivalent |
+| -------------------------- | ---------------- |
+| `PIHOLE_TOKEN` | `PIHOLE_PASSWORD` |
+
 ### Changes to Measurements and Fields
 
 | `1.x` Measurement | `2.x` Equivalent |
@@ -73,7 +79,7 @@ The application can be configured by providing either environment variables, or 
 docker run -d \
     -e PIHOLE_ALIAS="pihole" \
     -e PIHOLE_ADDRESS="http://pi.hole" \
-    -e PIHOLE_TOKEN="pihole_api_token" \
+    -e PIHOLE_PASSWORD="pihole_password" \
     -e PIHOLE_NUM_TOP_ITEMS=25 \
     -e PIHOLE_NUM_TOP_CLIENTS=25 \
     -e INFLUXDB_ADDRESS="http://influxdb:8086" \
@@ -95,7 +101,7 @@ services:
     environment:
       - "PIHOLE_ALIAS=pihole"
       - "PIHOLE_ADDRESS=http://pi.hole"
-      - "PIHOLE_TOKEN=pihole_api_token"
+      - "PIHOLE_PASSWORD=pihole_password"
       - "PIHOLE_NUM_TOP_ITEMS=25"
       - "PIHOLE_NUM_TOP_CLIENTS=25"
       - "INFLUXDB_ADDRESS=http://influxdb:8086"
@@ -110,7 +116,7 @@ services:
 python3 pihole_influxdb.py \
     --pihole-alias "pihole" \
     --pihole-address "http://pi.hole" \
-    --pihole-token "pihole_api_token" \
+    --pihole-password "pihole_password" \
     --pihole-num-top-items 25 \
     --pihole-num-top-clients 25 \
     --influxdb-address "http://influxdb:8096" \
