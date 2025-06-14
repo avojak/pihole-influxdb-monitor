@@ -7,13 +7,12 @@ services:
       - 8080:80
     environment:
       - "TZ=America/Denver"
-      - "WEBPASSWORD=password123"
-      - "PIHOLE_DNS_=1.1.1.1;1.0.0.1"
-      - "TEMPERATUREUNIT=f"
-      - "DNSMASQ_LISTENING=local"
-      - "FTLCONF_LOCAL_IPV4=127.0.0.1"
-      - "DNS_FQDN_REQUIRED=true"
-      - "DNSSEC=false"
+      - "FTLCONF_webserver_api_password=password123"
+      - "FTLCONF_dns_upstreams=1.1.1.1;1.0.0.1"
+      - "FTLCONF_dns_listeningMode=local"
+      # - "FTLCONF_LOCAL_IPV4=127.0.0.1"
+      - "FTLCONF_dns_domainNeeded=true"
+      - "FTLCONF_dns_dnssec=false"
     networks:
       testbr:
         ipv4_address: 10.5.0.5
@@ -77,7 +76,7 @@ services:
     environment:
       - "PIHOLE_ALIAS=pihole"
       - "PIHOLE_ADDRESS=http://pihole"
-      - "PIHOLE_TOKEN=25aa34070a75ce79dcf2496484ad2301de3daa2b80581c9b265eaadb79685303" # The API token is a hash of the web password, so if you decide to change the web password, you will need to change the API token
+      - "PIHOLE_PASSWORD=password123"
       - "INFLUXDB_ADDRESS=http://influxdb:8086"
       - "INFLUXDB_ORG=test"
       - "INFLUXDB_TOKEN=admintoken123"
@@ -85,6 +84,7 @@ services:
       - "INFLUXDB_CREATE_BUCKET=true"
     depends_on:
       - influxdb
+      - pihole
     networks:
       testbr:
 

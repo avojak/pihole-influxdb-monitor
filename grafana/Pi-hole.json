@@ -33,7 +33,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.3.2"
+      "version": "11.5.2"
     },
     {
       "type": "datasource",
@@ -85,9 +85,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 1,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -99,19 +98,28 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "Blocking",
           "mappings": [
             {
               "options": {
-                "0": {
+                "disabled": {
                   "color": "red",
                   "index": 0,
                   "text": "Disabled"
                 },
-                "1": {
+                "enabled": {
                   "color": "green",
                   "index": 1,
                   "text": "Enabled"
+                },
+                "failed": {
+                  "color": "red",
+                  "index": 2,
+                  "text": "Failed"
+                },
+                "unknown": {
+                  "color": "yellow",
+                  "index": 3,
+                  "text": "Unknown"
                 }
               },
               "type": "value"
@@ -121,8 +129,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -141,24 +148,43 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^Blocking$/",
           "values": false
         },
-        "textMode": "value_and_name"
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"status\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"blocking\")\n  |> filter(fn: (r) => r[\"_field\"] == \"blocking\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
+        }
+      ],
+      "title": "",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "blocking {alias=\"pihole\", hostname=\"pihole\"}": false
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "blocking {alias=\"pihole\", hostname=\"pihole\"}": "Blocking"
+            }
+          }
         }
       ],
       "type": "stat"
@@ -180,8 +206,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -201,6 +226,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -208,19 +234,22 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"dns_queries_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"queries\")\n  |> filter(fn: (r) => r[\"_field\"] == \"total\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -240,8 +269,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -261,6 +289,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -268,19 +297,22 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_blocked_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"queries\")\n  |> filter(fn: (r) => r[\"_field\"] == \"blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -301,8 +333,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -322,6 +353,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -329,19 +361,22 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_percentage_today\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"queries\")\n  |> filter(fn: (r) => r[\"_field\"] == \"percent_blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -361,8 +396,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -382,6 +416,7 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -389,19 +424,22 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"stats\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_being_blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gravity\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_being_blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
+      "title": "",
       "type": "stat"
     },
     {
@@ -414,18 +452,16 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "Time Since Gravity Updated",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
-          "unit": "dtdurations"
+          "unit": "dateTimeFromNow"
         },
         "overrides": []
       },
@@ -441,24 +477,63 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^Time Since Gravity Updated$/",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gravity\")\n  |> filter(fn: (r) => r[\"_field\"] == \"seconds_since_update\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gravity\")\n  |> filter(fn: (r) => r[\"_field\"] == \"last_update\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
+        }
+      ],
+      "title": "",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "last_update_time",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "last_update {alias=\"pihole\", hostname=\"pihole\"}"
+                }
+              },
+              "operator": "*",
+              "right": {
+                "fixed": "1000"
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "last_update_time": "Time Since Gravity Updated"
+            }
+          }
         }
       ],
       "type": "stat"
@@ -473,9 +548,10 @@
         "defaults": {
           "color": {
             "fixedColor": "red",
-            "mode": "fixed"
+            "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -500,8 +576,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           }
@@ -509,14 +584,44 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byFrameRefID",
-              "options": "C"
+              "id": "byName",
+              "options": "Blocked"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cached"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
                   "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Forwarded"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
                   "mode": "fixed"
                 }
               }
@@ -536,11 +641,10 @@
       "options": {
         "barRadius": 0,
         "barWidth": 0.5,
+        "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
-          "calcs": [
-            "sum"
-          ],
+          "calcs": [],
           "displayMode": "table",
           "placement": "right",
           "showLegend": false
@@ -549,6 +653,7 @@
         "showValue": "never",
         "stacking": "normal",
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         },
@@ -556,51 +661,52 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 100
       },
-      "pluginVersion": "9.2.4",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ads_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"history\")\n  |> filter(fn: (r) => r[\"_field\"] == \"total\" or r[\"_field\"] == \"forwarded\" or r[\"_field\"] == \"cached\" or r[\"_field\"] == \"blocked\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"over_time_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"domains_over_time\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "__expr__",
-            "uid": "${DS_EXPRESSION}"
-          },
-          "expression": "$B-$A",
-          "hide": false,
-          "refId": "C",
-          "type": "math"
         }
       ],
       "timeFrom": "24h",
       "title": "Total Queries",
       "transformations": [
         {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "Time",
+                "blocked",
+                "cached",
+                "forwarded"
+              ]
+            }
+          }
+        },
+        {
           "id": "renameByRegex",
           "options": {
-            "regex": "over_time_data.*",
+            "regex": "blocked",
             "renamePattern": "Blocked"
           }
         },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "C.*",
-            "renamePattern": "Allowed"
+            "regex": "cached",
+            "renamePattern": "Cached"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "forwarded",
+            "renamePattern": "Forwarded"
           }
         }
       ],
@@ -618,7 +724,9 @@
           },
           "custom": {
             "align": "left",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": false,
             "inspect": false
           },
@@ -627,8 +735,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -689,14 +796,16 @@
         ]
       },
       "gridPos": {
-        "h": 12,
+        "h": 14,
         "w": 6,
         "x": 0,
         "y": 10
       },
       "id": 13,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "enablePagination": true,
           "fields": "",
           "reducer": [
@@ -708,29 +817,20 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
-          "refId": "B"
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_permitted_domains\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
         }
       ],
       "timeFrom": "24h",
-      "title": "Top Queries",
+      "title": "Top Allowed Domains",
       "transformations": [
         {
           "id": "extractFields",
@@ -763,7 +863,9 @@
           },
           "custom": {
             "align": "left",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": false,
             "inspect": false
           },
@@ -772,8 +874,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -834,14 +935,16 @@
         ]
       },
       "gridPos": {
-        "h": 12,
+        "h": 14,
         "w": 6,
         "x": 6,
         "y": 10
       },
       "id": 14,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "enablePagination": true,
           "fields": "",
           "reducer": [
@@ -853,29 +956,20 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_ads\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
-          "refId": "B"
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_blocked_domains\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
         }
       ],
       "timeFrom": "24h",
-      "title": "Top Ads",
+      "title": "Top Blocked Domains",
       "transformations": [
         {
           "id": "extractFields",
@@ -908,7 +1002,9 @@
           },
           "custom": {
             "align": "left",
-            "displayMode": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
             "filterable": false,
             "inspect": false
           },
@@ -917,8 +1013,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -979,14 +1074,16 @@
         ]
       },
       "gridPos": {
-        "h": 12,
+        "h": 14,
         "w": 6,
         "x": 12,
         "y": 10
       },
       "id": 15,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "enablePagination": true,
           "fields": "",
           "reducer": [
@@ -998,29 +1095,20 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.3.2",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "hide": true,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_queries\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> last()\n  |> group(columns: [\"host\", \"_measurement\", \"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)  \n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\", \"hostname\"])",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_INFLUXDB_PIHOLE}"
-          },
           "hide": false,
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_sources\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
-          "refId": "B"
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"top_clients\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> last()\n  |> group(columns: [\"_time\"], mode:\"by\")\n  |> sort(columns: [\"_value\"], desc: true)\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"alias\"])\n  |> yield(name: \"last\")",
+          "refId": "A"
         }
       ],
       "timeFrom": "24h",
-      "title": "Top Sources",
+      "title": "Top Clients",
       "transformations": [
         {
           "id": "extractFields",
@@ -1028,6 +1116,27 @@
             "format": "kvp",
             "replace": true,
             "source": "_value"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^\\|(.*)$",
+            "renamePattern": "null|$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^(.*)\\|(.*)$",
+            "renamePattern": "$1 ($2)"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^null \\((.*)\\)$",
+            "renamePattern": "$1"
           }
         },
         {
@@ -1058,9 +1167,8 @@
               "viz": false
             }
           },
-          "decimals": 2,
-          "mappings": [],
-          "unit": "percent"
+          "decimals": 0,
+          "mappings": []
         },
         "overrides": [
           {
@@ -1081,88 +1189,13 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Other"
+              "options": "Cache"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
                   "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "one.one.one.one#53|1.0.0.1#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "one.one.one.one#53|1.1.1.1#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "resolver1.opendns.com#53|208.67.222.222#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "semi-dark-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "resolver2.opendns.com#53|208.67.220.220#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cached"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "orange",
                   "mode": "fixed"
                 }
               }
@@ -1174,7 +1207,7 @@
         "h": 8,
         "w": 9,
         "x": 0,
-        "y": 22
+        "y": 24
       },
       "id": 17,
       "options": {
@@ -1184,7 +1217,7 @@
           "placement": "right",
           "showLegend": true,
           "values": [
-            "value"
+            "percent"
           ]
         },
         "pieType": "donut",
@@ -1196,41 +1229,43 @@
           "values": false
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "desc"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB_PIHOLE}"
           },
-          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"forward_destinations\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"pihole\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"upstreams\")\n  |> filter(fn: (r) => r[\"alias\"] == \"$alias\")\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
-      "title": "Forward Destinations",
+      "title": "Upstream Destinations",
       "transformations": [
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "(cached\\|cached)",
-            "renamePattern": "Cached"
+            "regex": "cache \\(cache:-1\\)",
+            "renamePattern": "Cache"
           }
         },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "(blocked\\|blocked)",
+            "regex": "blocklist \\(blocklist:-1\\)",
             "renamePattern": "Blocked"
           }
         },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "(other\\|other)",
-            "renamePattern": "Other"
+            "regex": "(.*)\\((.*):(.*)\\)",
+            "renamePattern": "$1 ($2)"
           }
         }
       ],
@@ -1253,123 +1288,15 @@
               "viz": false
             }
           },
-          "decimals": 2,
-          "mappings": [],
-          "unit": "percent"
+          "mappings": []
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Blocked"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Other"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "one.one.one.one#53|1.0.0.1#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "one.one.one.one#53|1.1.1.1#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "resolver1.opendns.com#53|208.67.222.222#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "semi-dark-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "resolver2.opendns.com#53|208.67.220.220#53"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cached"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 9,
         "x": 9,
-        "y": 22
+        "y": 24
       },
       "id": 18,
       "options": {
@@ -1379,7 +1306,7 @@
           "placement": "right",
           "showLegend": true,
           "values": [
-            "value"
+            "percent"
           ]
         },
         "pieType": "donut",
@@ -1391,10 +1318,12 @@
           "values": false
         },
         "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
@@ -1406,12 +1335,12 @@
         }
       ],
       "title": "Query Types",
-      "transformations": [],
       "type": "piechart"
     }
   ],
-  "schemaVersion": 37,
-  "style": "dark",
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 41,
   "tags": [],
   "templating": {
     "list": [
@@ -1423,17 +1352,13 @@
         },
         "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(bucket: \"pihole\", tag: \"alias\")",
         "description": "",
-        "hide": 0,
         "includeAll": false,
         "label": "alias",
-        "multi": false,
         "name": "alias",
         "options": [],
         "query": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(bucket: \"pihole\", tag: \"alias\")",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       }
     ]
@@ -1446,6 +1371,5 @@
   "timezone": "",
   "title": "Pi-hole",
   "uid": "zLZsJ9v4k",
-  "version": 18,
-  "weekStart": ""
+  "version": 1
 }

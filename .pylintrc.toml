@@ -1,0 +1,12 @@
+[tool.pylint]
+disable = [
+    "fixme",
+    "import-error",
+    "logging-fstring-interpolation",
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "too-many-instance-attributes",
+    "too-few-public-methods",
+    "too-many-locals"
+]
+max-line-length = 120
