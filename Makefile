@@ -5,5 +5,6 @@ image:
 .PHONY: lint
 lint:
 	pylint pihole_influxdb.py
+	hadolint Dockerfile
 
 all: image
