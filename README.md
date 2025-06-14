@@ -24,7 +24,7 @@ Upgrading to version 2.x is a non-passive update.
 
 > [!CAUTION]
 > The underlying structure of the data stored in the InfluxDB bucket has changed with version 2.x. As a result, it's recommended to create a
-> new bucket.
+> new bucket. You will likely experience errors if you attempt to point to the same bucket that version 1.x was using.
 
 ### Changes to Environment Variables
 
