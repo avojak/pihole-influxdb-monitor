@@ -377,7 +377,7 @@ class PiholeInfluxDB():
         if blocking:
             blocking_status = {
                 "blocking": blocking["blocking"],
-                "timer": blocking["timer"] if blocking["timer"] is not None else -1
+                "timer": int(blocking["timer"]) if blocking["timer"] is not None else -1
             }
             points.append(self._create_point("blocking", tags, blocking_status, now_seconds,
                                              {"blocking": "str", "timer": "int"}))
